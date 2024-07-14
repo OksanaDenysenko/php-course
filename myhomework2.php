@@ -43,3 +43,4 @@ function parseTcpStringAsHttpRequest($string) {
 
 $http = parseTcpStringAsHttpRequest($contents);
 echo(json_encode($http, JSON_PRETTY_PRINT));
+
