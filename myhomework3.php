@@ -76,3 +76,4 @@ function parseTcpStringAsHttpRequest($string) {
 
 $http = parseTcpStringAsHttpRequest($contents);
 processHttpRequest($http["method"], $http["uri"], $http["headers"], $http["body"]);
+
