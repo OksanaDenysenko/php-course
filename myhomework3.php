@@ -36,33 +36,45 @@ function processHttpRequest($method, $uri, $headers, $body) {
     $subUri=explode("=",$uri);
     // $numbers=explode(",",$subUri[1]);
 
-    if ($method==="GET"&& strpos($uri,"?nums=")!=false && $numbers=explode(",",$subUri[1])){ // якщо метод GET, числа розділені комами і є ?nums=
-        if(strpos($uri,"/sum")!=0){ // uri не починається з /sum
-            outputHttpResponse(404,"Not Found",$headers,"not found");
-        }
-        else {
-            $sum=0;
-            for($i=0; $i<count($numbers); $i++){
-                $sum=$sum+$numbers[$i];
-            }
-            outputHttpResponse(200," OK",$headers,$sum);
-        }
+//    if ($method==="GET"&& strpos($uri,"?nums=")!=false && $numbers=explode(",",$subUri[1])){ // якщо метод GET, числа розділені комами і є ?nums=
+//        if(strpos($uri,"/sum")!=0){ // uri не починається з /sum
+//            outputHttpResponse(404,"Not Found",$headers,"not found");
+//        }
+//        else {
+//            $sum = array_sum($numbers);
+//            outputHttpResponse(200," OK",$headers,$sum);
+//        }
+//    }
+//    else {
+//        outputHttpResponse(400," Bad Request",$headers,"not found");
+//    }
+
+    if ($method !== "GET" || strpos($uri, "?nums=") === false || !is_array($numbers = explode(",", $subUri[1]))) {
+        outputHttpResponse(400, "Bad Request", $headers, "not found");
+        return;
     }
-    else {
-        outputHttpResponse(400," Bad Request",$headers,"not found");
+
+    if (strpos($uri, "/sum") !== 0) { //uri не починається з /sum
+        outputHttpResponse(404, "Not Found", $headers, "not found");
+        return;
     }
+
+    $sum = array_sum($numbers); // якщо метод GET, числа розділені комами і є ?nums=
+    outputHttpResponse(200, "OK", $headers, $sum);
 }
 
 function parseTcpStringAsHttpRequest($string) {
     $substring = explode("\n",$string);
-    $firstSubstring = explode(" ",$substring[0]);
-    $method=$firstSubstring[0];
-    $uri=$firstSubstring[1];
+    $method_and_uri = explode(" ",$substring[0]);
+    $method=$method_and_uri[0];
+    $uri=$method_and_uri[1];
     $headers=[];
 
-    for($i=1; $i<count($substring)-2; $i++){
-        $sub=explode(":",$substring[$i]);
-        $headers[$sub[0]]=$sub[1];
+    foreach ($substring as $key => $value) {
+        if ($key > 0 && $key < count($substring) - 2) { // Перевірка індексу
+            $value_array = explode(":", $value);
+            $headers[$value_array[0]] = $value_array[1];
+        }
     }
 
     $body=$substring[count($substring)-1];
