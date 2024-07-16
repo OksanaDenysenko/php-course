@@ -21,18 +21,26 @@ function readHttpLikeInput() {
 $contents = readHttpLikeInput();
 
 function parseTcpStringAsHttpRequest($string) {
+    //$substring = explode(PHP_EOL, $string);
     $substring = explode("\n",$string);
-    $firstSubstring = explode(" ",$substring[0]);
-    $method=$firstSubstring[0];
-    $uri=$firstSubstring[1];
+    $method_and_uri = explode(" ",$substring[0]);
+    $method=$method_and_uri[0];
+    $uri=$method_and_uri[1];
     $headers=[];
 
-    for($i=1; $i<count($substring)-2; $i++){
-        $sub=explode(":",$substring[$i]);
-        $headers[$sub[0]]=$sub[1];
+//    for($i=1; $i<count($substring)-2; $i++){
+//        $value_array=explode(":",$substring[$i]);
+//        $headers[$value_array[0]]=$value_array[1];
+//    }
+    foreach ($substring as $key => $value) {
+        if ($key > 0 && $key < count($substring) - 2) { // Перевірка індексу
+            $value_array = explode(":", $value);
+            $headers[$value_array[0]] = $value_array[1];
+        }
     }
 
     $body=$substring[count($substring)-1];
+
     return array(
         "method" => $method,
         "uri" => $uri,
