@@ -1,13 +1,18 @@
 <?php
 
-function readHttpLikeInput() {
-    $f = fopen( 'php://stdin', 'r' );
+/**
+ * This function simulates reading data from standard input in a format that resembles an HTTP request.
+ * @return string
+ */
+function readHttpLikeInput()
+{
+    $f = fopen('php://stdin', 'r');
     $store = "";
     $toread = 0;
-    while( $line = fgets( $f ) ) {
+    while ($line = fgets($f)) {
         $store .= preg_replace("/\r/", "", $line);
-        if (preg_match('/Content-Length: (\d+)/',$line,$m))
-            $toread=$m[1]*1;
+        if (preg_match('/Content-Length: (\d+)/', $line, $m))
+            $toread = $m[1] * 1;
         if ($line == "\r\n")
             break;
     }
@@ -18,75 +23,102 @@ function readHttpLikeInput() {
 
 $contents = readHttpLikeInput();
 
-function outputHttpResponse($statuscode, $statusmessage, $headers, $body) {
-
-    $response = "HTTP/1.1 " . $statuscode.$statusmessage.PHP_EOL;
-    $response .= "Date: " . gmdate("D, d M Y H:i:s GMT").PHP_EOL;
-    $response .="Server: Apache/2.2.14 (Win32)".PHP_EOL;
-    $response .="Content-Length:".strlen($body). PHP_EOL;
-    $response .="Connection: Closed".PHP_EOL;
-    $response .="Content-Type: text/html; charset=utf-8".PHP_EOL;
+/**
+ * This function generates a response in HTTP protocol format.
+ * @param $statuscode - HTTP response status code.
+ * @param $statusmessage - HTTP response status message.
+ * @param $headers - An array of additional headers.
+ * @param $body - The body of the response message.
+ * @return void - A response in HTTP protocol format
+ */
+function outputHttpResponse($statuscode, $statusmessage, $headers, $body)
+{
+    $response = "HTTP/1.1 " . $statuscode . $statusmessage . PHP_EOL;
+    $response .= "Date: " . gmdate("D, d M Y H:i:s GMT") . PHP_EOL;
+    $response .= "Server: Apache/2.2.14 (Win32)" . PHP_EOL;
+    $response .= "Content-Length:" . strlen($body) . PHP_EOL;
+    $response .= "Connection: Closed" . PHP_EOL;
+    $response .= "Content-Type: text/html; charset=utf-8" . PHP_EOL;
     $response .= PHP_EOL;
     $response .= $body;
 
     echo $response;
 }
 
-function processHttpRequest($method, $uri, $headers, $body) {
+/**
+ * This function is designed to handle incoming HTTP requests of a specific format.
+ * It analyzes the request method, URI, headers, and body, and based on this information, forms a response.
+ * @param $method - HTTP method
+ * @param $uri - а path to the resource on the server
+ * @param $headers - an array of HTTP request headers
+ * @param $body - a body of the HTTP request
+ * @return void
+ */
+function processHttpRequest($method, $uri, $headers, $body)
+{
+    if ($method != "POST" || $headers["Content-Type"] != " application/x-www-form-urlencoded" || $uri != "/api/checkLoginAndPassword") {
+        outputHttpResponse(400, " Bad Request", $headers, "not found");
 
-    if ($method!="POST" || $headers["Content-Type"]!=" application/x-www-form-urlencoded"|| $uri!="/api/checkLoginAndPassword"){
-        return outputHttpResponse(400," Bad Request",$headers,"not found");
-    }
-    else {
+    } else {
         $arrayBody = explode("&", $body);
-        $login=explode("=", $arrayBody[0]);
-        $password=explode("=", $arrayBody[1]);
-        $login_password=$login[1].":".$password[1]; // отримали логін і пароль
+        $login = explode("=", $arrayBody[0]);
+        $password = explode("=", $arrayBody[1]);
+        $login_password = $login[1] . ":" . $password[1]; // отримали логін і пароль
 
-        $file="D:\Сейчас\PHP\Level1\passwords.txt";
-        if (!file_exists("passwords.txt")){ //якщо файлу не існує
-            return outputHttpResponse(500," Integral Server Error",$headers,"not found");
-        }
-        else{
+        $file = "passwords.txt";
+
+        if (!file_exists("passwords.txt")) { //якщо файлу не існує
+            outputHttpResponse(500, " Integral Server Error", $headers, "not found");
+
+            return;
+
+        } else {
             try {
                 $fileContent = file_get_contents($file); // читаємо файл
             } catch (Exception $e) {
-                echo "Error: " . $e->getMessage();
+                error_log("Error reading file: " . $e->getMessage(), 3);
+                echo "Server error";
+
+                return;
             }
         }
         $string = explode("\n", $fileContent);
-        for($i=0; $i<count($string); $i++){
-            if($string[$i]===$login_password){
-                return outputHttpResponse(200," OK",$headers,"<h1 style=\"color:green\">FOUND</h1>");
-            }
-            if($i===(count($string)-1)){ // якщо логін і пароль не знайдені в файлику
-                return outputHttpResponse(401," Unauthorized",$headers,"not found");
-            }
+        if ((strpos($string, $login_password)) !== false) {
+            outputHttpResponse(200, " OK", $headers, "<h1 style=\"color:green\">FOUND</h1>");
+        } else {
+            outputHttpResponse(401, " Unauthorized", $headers, "not found");
+        }
+    }
+}
 
+/**
+ * This function is designed to parse a string received and convert it into a data structure representing an HTTP request.
+ * @param $string - a string received over a TCP connection
+ * @return array - a data structure representing an HTTP request
+ */
+function parseTcpStringAsHttpRequest($string)
+{
+    $substring = explode("\n", $string);
+    $method_and_uri = explode(" ", $substring[0]);
+    $method = $method_and_uri[0];
+    $uri = $method_and_uri[1];
+    $headers = [];
+
+    foreach ($substring as $key => $value) {
+        if ($key > 0 && $key < count($substring) - 2) { // Перевірка індексу
+            $value_array = explode(":", $value);
+            $headers[$value_array[0]] = $value_array[1];
         }
     }
 
-}
+    $body = $substring[count($substring) - 1];
 
-function parseTcpStringAsHttpRequest($string) {
-    $substring = explode("\n",$string);
-    $firstSubstring = explode(" ",$substring[0]);
-    $method=$firstSubstring[0];
-    $uri=$firstSubstring[1];
-    $headers=[];
-
-    for($i=1; $i<count($substring)-2; $i++){
-        $sub=explode(":",$substring[$i]);
-        $headers[$sub[0]]=$sub[1];
-    }
-
-    $body=$substring[count($substring)-1];
-    return array(
+    return [
         "method" => $method,
         "uri" => $uri,
         "headers" => $headers,
         "body" => $body,
-    );
+    ];
 }
 
 $http = parseTcpStringAsHttpRequest($contents);
