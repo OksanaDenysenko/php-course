@@ -1,37 +1,37 @@
 <?php
-// підключення до БД
+// database connection
 global $conn;
-$dbname="level2";
+$dbname = "level2";
 require_once("db_conect.php");
 
-//приймає json { text: "..." }
+//receives json { text: "..." }
 $jsonGet = file_get_contents('php://input');
 $text = json_decode($jsonGet, true);
 
-// Чи існує таблиця items
+// checking whether the items table exists
 $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$dbname' AND TABLE_NAME = 'items'";
 $result = $conn->query($sql);
 
-if ($result->num_rows == 0) { // якщо не існує, створити таблицю
+if ($result->num_rows == 0) { //if does not exist, create a table
     $sql = "CREATE TABLE items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     text VARCHAR(255) NOT NULL,
     checked BOOL NOT NULL
 )";
     if ($conn->query($sql) === TRUE) {
-        echo "Таблиця items створена успішно!\n";
+        echo "The items table was created successfully!" . PHP_EOL;
     } else {
-        echo "Помилка створення таблиці: " . $conn->error . "\n";
+        echo "Error creating table: " . $conn->error . PHP_EOL;
     }
 }
 
-//додавання item
+//add item
 $sql = "INSERT INTO items (text, checked) VALUES ('$text', FALSE)";
 if ($conn->query($sql) === TRUE) {
-    $id= $conn->insert_id;
+    $id = $conn->insert_id;
     echo json_encode(['id' => $id]);
 } else {
-    echo "Помилка додавання запису: " . $conn->error . "\n";
+    echo "Error adding item: " . $conn->error . PHP_EOL;
 }
 
 $conn->close();

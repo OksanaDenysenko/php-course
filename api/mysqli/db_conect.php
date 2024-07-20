@@ -4,12 +4,13 @@ $dbuser = "root";
 $dbpass = "";
 $dbname = "level2";
 
-// Створити підключення до MySQL
-$conn = new mysqli($dbhost, $dbuser,$dbpass,$dbname);
+// Create a connection to MySQL
+$conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
 
 
-// Перевірити підключення
+// Check the connection
 if ($conn->connect_error) {
-    die("Помилка підключення: " . $conn->connect_error);
+    die("Connection error: " . $conn->connect_error);
+} else {
+    echo "The connection is made";
 }
-else{ echo "Підключення виконано";}

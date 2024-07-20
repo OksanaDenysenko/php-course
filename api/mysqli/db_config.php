@@ -3,22 +3,22 @@ $dbhost = "localhost";
 $dbuser = "root";
 //$dbpass = "password";
 
-// Створити підключення до MySQL
+// Create a connection to MySQL
 $conn = new mysqli($dbhost, $dbuser);
 
-// Перевірити підключення
+// Check the connection
 if ($conn->connect_error) {
-    die("Помилка підключення: " . $conn->connect_error);
+    die("Connection error: " . $conn->connect_error);
 }
 
-// Створити базу даних "level2"
+//Create database "level2"
 $sql = "CREATE DATABASE level2";
 
 if ($conn->query($sql) === TRUE) {
-    echo "База даних 'level2' успішно створена.<br>";
+    echo "Database 'level2' successfully created.<br>";
 } else {
-    echo "Помилка створення бази даних: " . $conn->error . "<br>";
+    echo "Error creating database: " . $conn->error . "<br>";
 }
 
-// Закрити підключення
+// Close the connection
 $conn->close();
