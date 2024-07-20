@@ -24,7 +24,7 @@ $sql = "UPDATE items SET text = '$text', checked = '$checked' WHERE id = $id";
 if ($conn->query($sql) === TRUE) {
     echo json_encode(['ok' => true]);
 } else {
-    echo "Error updating record: " . $conn->error . "\n";
+    echo "Error updating record: " . $conn->error . PHP_EOL;
 }
 
 $conn->close();
