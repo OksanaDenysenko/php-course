@@ -1,5 +1,11 @@
 <?php
 
+//CORS
+header("Access-Control-Allow-Origin: http://front.loc");
+header("Access-Control-Allow-Methods: PUT, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Credentials: true");
+
 // database connection
 global $conn;
 $dbname = "level2";
@@ -12,10 +18,6 @@ $json = json_decode($jsonGet, true);
 $id = $json["id"]; // The ID of the record to update
 $text = $json["text"];// New values to update
 $checked = $json["checked"];
-
-//$id = 3; // Для перевірки
-//$text = "cook";
-//$checked = TRUE;
 
 // SQL-request to update a record
 $sql = "UPDATE items SET text = '$text', checked = '$checked' WHERE id = $id";
