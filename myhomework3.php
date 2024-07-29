@@ -8,13 +8,18 @@ function readHttpLikeInput()
     $f = fopen('php://stdin', 'r');
     $store = "";
     $toread = 0;
+
     while ($line = fgets($f)) {
         $store .= preg_replace("/\r/", "", $line);
+
         if (preg_match('/Content-Length: (\d+)/', $line, $m))
             $toread = $m[1] * 1;
+
         if ($line == "\r\n")
+
             break;
     }
+
     if ($toread > 0)
         $store .= fread($f, $toread);
 
@@ -58,14 +63,15 @@ function outputHttpResponse($statuscode, $statusmessage, $headers, $body)
 function processHttpRequest($method, $uri, $headers, $body)
 {
     $subUri = explode("=", $uri);
+    $numbers = explode(",", $subUri[1]);
 
-    if ($method !== "GET" || strpos($uri, "?nums=") === false || !is_array($numbers = explode(",", $subUri[1]))) {
+    if ($method !== "GET" || !str_contains($uri, "?nums=") || count($numbers) < 1 || $numbers[0] == '') {
         outputHttpResponse(400, "Bad Request", $headers, "not found");
 
         return;
     }
 
-    if (strncmp($uri, "/sum", 4) !== 0) { //uri не починається з /sum
+    if (!str_starts_with($uri, "/sum")) { //uri не починається з /sum
         outputHttpResponse(404, "Not Found", $headers, "not found");
 
         return;
@@ -89,6 +95,7 @@ function parseTcpStringAsHttpRequest($string)
     $headers = [];
 
     foreach ($substring as $key => $value) {
+
         if ($key > 0 && $key < count($substring) - 2) { // Перевірка індексу
             $value_array = explode(":", $value);
             $headers[$value_array[0]] = $value_array[1];
