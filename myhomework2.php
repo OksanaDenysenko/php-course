@@ -9,15 +9,21 @@ function readHttpLikeInput()
     $f = fopen('php://stdin', 'r');
     $store = "";
     $toread = 0;
+
     while ($line = fgets($f)) {
         $store .= preg_replace("/\r/", "", $line);
+
         if (preg_match('/Content-Length: (\d+)/', $line, $m))
             $toread = $m[1] * 1;
+
         if ($line == "\r\n")
+
             break;
     }
+
     if ($toread > 0)
         $store .= fread($f, $toread);
+
     return $store;
 }
 
@@ -38,10 +44,12 @@ function parseTcpStringAsHttpRequest($string)
     $headers = [];
 
     foreach ($substrings as $key => $value) {
+
         if ($key > 0 && $key < count($substrings) - 2) { // Перевірка індексу
             $value_array = explode(":", $value);
             $headers[$value_array[0]] = $value_array[1];
         }
+
     }
 
     $body = $substrings[count($substrings) - 1];
