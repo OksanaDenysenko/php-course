@@ -9,15 +9,21 @@ function readHttpLikeInput()
     $f = fopen('php://stdin', 'r');
     $store = "";
     $toread = 0;
+
     while ($line = fgets($f)) {
         $store .= preg_replace("/\r/", "", $line);
+
         if (preg_match('/Content-Length: (\d+)/', $line, $m))
             $toread = $m[1] * 1;
+
         if ($line == "\r\n")
+
             break;
     }
+
     if ($toread > 0)
         $store .= fread($f, $toread);
+
     return $store;
 }
 
@@ -59,36 +65,37 @@ function processHttpRequest($method, $uri, $headers, $body)
     if ($method != "POST" || $headers["Content-Type"] != " application/x-www-form-urlencoded" || $uri != "/api/checkLoginAndPassword") {
         outputHttpResponse(400, " Bad Request", $headers, "not found");
 
-    } else {
-        $arrayBody = explode("&", $body);
-        $login = explode("=", $arrayBody[0]);
-        $password = explode("=", $arrayBody[1]);
-        $login_password = $login[1] . ":" . $password[1]; // отримали логін і пароль
+        return;
+    }
 
-        $file = "passwords.txt";
+    $arrayBody = explode("&", $body);
+    $login = explode("=", $arrayBody[0]);
+    $password = explode("=", $arrayBody[1]);
+    $login_password = $login[1] . ":" . $password[1]; // отримали логін і пароль
 
-        if (!file_exists("passwords.txt")) { //якщо файлу не існує
-            outputHttpResponse(500, " Integral Server Error", $headers, "not found");
+    $file = "passwords.txt";
+
+    try {
+        $fileContent = file_get_contents($file); // читаємо файл
+    } catch (Exception $e) {
+        error_log("Error reading file: " . $e->getMessage(), 3);
+        outputHttpResponse(500, " Integral Server Error", $headers, "not found");
+
+        return;
+    }
+
+    $string = explode("\n", $fileContent);
+
+    foreach ($string as $value) {
+
+        if ($value== $login_password) {
+            outputHttpResponse(200, " OK", $headers, "<h1 style=\"color:green\">FOUND</h1>");
 
             return;
-
-        } else {
-            try {
-                $fileContent = file_get_contents($file); // читаємо файл
-            } catch (Exception $e) {
-                error_log("Error reading file: " . $e->getMessage(), 3);
-                echo "Server error";
-
-                return;
-            }
-        }
-        $string = explode("\n", $fileContent);
-        if ((strpos($string, $login_password)) !== false) {
-            outputHttpResponse(200, " OK", $headers, "<h1 style=\"color:green\">FOUND</h1>");
-        } else {
-            outputHttpResponse(401, " Unauthorized", $headers, "not found");
         }
     }
+
+    outputHttpResponse(401, " Unauthorized", $headers, "not found");
 }
 
 /**
@@ -105,6 +112,7 @@ function parseTcpStringAsHttpRequest($string)
     $headers = [];
 
     foreach ($substring as $key => $value) {
+
         if ($key > 0 && $key < count($substring) - 2) { // Перевірка індексу
             $value_array = explode(":", $value);
             $headers[$value_array[0]] = $value_array[1];
