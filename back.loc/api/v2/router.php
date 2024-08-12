@@ -157,25 +157,23 @@ function login($data, mysqli $conn): void
     $login = $data["login"];
     $password = $data["pass"] . "ZxCvBn"; // add additional characters for security
 
-//    // If fields are empty
-//    if (empty($login) || empty($data["pass"])) {
-//        http_response_code(400);
-//        echo json_encode(['error' => 'Invalid input']);
-//    }
-//
-//    //Login and password validation
-//    if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
-//        http_response_code(409);
-//        echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
-//    }
-//
-//    //SQL injection
-//    $stmt = $conn->prepare("SELECT * FROM users WHERE login = ?"); // prepared request
-//    $stmt->bind_param("s", $login);
-//    $stmt->execute();
-//    $result = $stmt->get_result();
+    // If fields are empty
+    if (empty($login) || empty($data["pass"])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid input']);
+    }
 
-    $result=validateLoginData($login, $password, $conn);
+    //Login and password validation
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
+        http_response_code(409);
+        echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
+    }
+
+    //SQL injection
+    $stmt = $conn->prepare("SELECT * FROM users WHERE login = ?"); // prepared request
+    $stmt->bind_param("s", $login);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if (mysqli_num_rows($result) != 1) { //if the user is not registered
         http_response_code(401);
@@ -202,7 +200,7 @@ function login($data, mysqli $conn): void
         echo json_encode(['error' => 'Server error']);
     }
 
-   // $stmt->close();
+    $stmt->close();
 }
 
 /**
@@ -235,56 +233,6 @@ function register($data, mysqli $conn): void
     $login = $data["login"];
     $password = $data["pass"] . "ZxCvBn"; // add additional characters for security
 
-//    // If fields are empty
-//    if (empty($login) || empty($data["pass"])) {
-//        http_response_code(400);
-//        echo json_encode(['error' => 'Invalid input']);
-//        exit;
-//    }
-//
-//    //Login and password validation
-//    if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
-//        http_response_code(409);
-//        echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
-//    }
-//
-//    // Preparation and execution of the request
-//    $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE login = ?");
-//    $stmt->bind_param("s", $login);
-//
-//    if (!$stmt->execute()) {
-//        http_response_code(500);
-//        echo json_encode(['error' => 'Database error']);
-//    }
-//
-//    $result = $stmt->get_result();
-
-    $result = validateLoginData($login, $password, $conn);
-    $count = $result->fetch_column();
-
-    if ($count > 0) {
-        http_response_code(409);
-        echo json_encode(['error' => 'A user with this login already exists']);
-    }
-    $hash_password = password_hash($password, PASSWORD_DEFAULT); // Hashed password
-
-    //Add a user to the database
-    $stmt = $conn->prepare("INSERT INTO users (login, pass) VALUES (?, ?)"); // prepared request
-    $stmt->bind_param("ss", $login, $hash_password);
-
-    if ($stmt->execute()) {
-        http_response_code(200);
-        echo json_encode(['ok' => true]);
-    } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Database error']);
-    }
-
-    $stmt->close();
-}
-
-function validateLoginData ($login, $password, $conn)
-{
     // If fields are empty
     if (empty($login) || empty($data["pass"])) {
         http_response_code(400);
@@ -308,8 +256,27 @@ function validateLoginData ($login, $password, $conn)
     }
 
     $result = $stmt->get_result();
+    $count = $result->fetch_column();
+
+    if ($count > 0) {
+        http_response_code(409);
+        echo json_encode(['error' => 'A user with this login already exists']);
+    }
+    $hash_password = password_hash($password, PASSWORD_DEFAULT); // Hashed password
+
+    //Add a user to the database
+    $stmt = $conn->prepare("INSERT INTO users (login, pass) VALUES (?, ?)"); // prepared request
+    $stmt->bind_param("ss", $login, $hash_password);
+
+    if ($stmt->execute()) {
+        http_response_code(200);
+        echo json_encode(['ok' => true]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error']);
+    }
+
     $stmt->close();
-    return $result;
 }
 
 $conn->close(); // closing the connection
