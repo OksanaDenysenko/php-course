@@ -135,11 +135,7 @@ function getItems(mysqli $conn): void
     $sql = "SELECT * FROM items";
     $result = $conn->query($sql);
 
-    $data = [];
-
-    while ($row = $result->fetch_assoc()) {
-        $data[] = $row;
-    }
+    $data = $result->fetch_all(MYSQLI_ASSOC);
 
     echo json_encode(['items' => $data]);;
 }
