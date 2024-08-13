@@ -14,9 +14,9 @@ require_once("db_conect.php");
 $jsonGet = file_get_contents('php://input');
 $json = json_decode($jsonGet, true);
 
-$id = $json["id"]; // The ID of the record to update
-$text = htmlspecialchars($json["text"]);// New values to update
-$checked = $json["checked"]; //До $id і $checked не застосовую htmlspecialchars, бо ці поля, як я розумію, підтягуються автоматично
+$id = Strip_tags(htmlspecialchars($json["id"])); // The ID of the record to update
+$text = Strip_tags(htmlspecialchars($json["text"]));// New values to update
+$checked = Strip_tags(htmlspecialchars($json["checked"])); // New values to update
 
 // SQL-request to update a record
 $stmt = $conn->prepare("UPDATE items SET text = ?, checked = '$checked' WHERE id = $id"); // prepared request

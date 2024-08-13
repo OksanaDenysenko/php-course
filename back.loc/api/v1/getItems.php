@@ -16,10 +16,7 @@ $sql = "SELECT * FROM $table";
 $result = $conn->query($sql);
 
 //Creating an array of data
-$data = [];
-while ($row = $result->fetch_assoc()) {
-    $data[] = $row;
-}
+$data = $result->fetch_all(MYSQLI_ASSOC);
 
 // Conversion of data array to JSON
 $json = json_encode(['items' => $data]);

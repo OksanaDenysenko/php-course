@@ -14,18 +14,14 @@ require_once("db_conect.php");
 $jsonGet = file_get_contents('php://input');
 $text = json_decode($jsonGet, true);
 
-$id = $text["id"];
+$id = Strip_tags(htmlspecialchars($text["id"]));
 
 // SQL-request to delete a record
-$sql = "DELETE FROM items WHERE id = $id";
-
-/*
- * Тут не робила підготовленого запиту і екранування спец.символів, бо користувач не вводить ніяких данних,
- *  а просто натичкає на хрестик і виконується код.
- */
+$stmt = $conn->prepare("DELETE FROM items WHERE id = ?");
+$stmt->bind_param("i", $id);
 
 //Execution of the request
-if ($conn->query($sql) === TRUE) {
+if ($stmt->execute()) {
     http_response_code(200);
     echo json_encode(['ok' => true]);
 } else {
@@ -33,4 +29,5 @@ if ($conn->query($sql) === TRUE) {
     echo json_encode(['error' => 'Server error']);
 }
 
+$stmt->close();
 $conn->close();

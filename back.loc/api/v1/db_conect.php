@@ -1,16 +1,12 @@
 <?php
-$dbhost = "localhost";
-$dbuser = "root";
-$dbpass = "";
-$dbname = "level2";
+require 'config.php'; // database settings file
 
-// Create a connection to MySQL
-$conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
+$config = require 'config.php';
 
+$conn = new mysqli(
+    $config['dbhost'],
+    $config['dbuser'],
+    $config['dbpass'],
+    $config['dbname']
+);
 
-//// Check the connection // Прибрала, через помилку в браузері
-//if ($conn->connect_error) {
-//    die("Connection error: " . $conn->connect_error);
-//} else {
-//    echo "The connection is made";
-//}

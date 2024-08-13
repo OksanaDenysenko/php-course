@@ -21,15 +21,20 @@ session_start(); //session opening
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);
 
-//XSS attacks
-$login = htmlspecialchars($data["login"]); // replacement of special characters with HTML entities
-$password = htmlspecialchars($data["pass"]);
+$login = $data["login"];
+$password = $data["pass"] . "ZxCvBn"; // add additional characters for security
 
 // If fields are empty
 if (empty($login) || empty($password)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid input']);
     exit;
+}
+
+//Login and password validation
+if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
 }
 
 //SQL injection
@@ -52,11 +57,8 @@ if (!password_verify($password, $row['pass'])) { //if the password hash does not
 
 try {
     $token = bin2hex(random_bytes(32));
-    setcookie('auth_token', $token, time() + 3600, '/'); // store the token in a cookie for 1 hour
+    setcookie('auth_token', $token, time() + 3600, '/', '', true, true);// store the token in a cookie for 1 hour
     $_SESSION['auth_token'] = $token; // store the token in the session
-//    $_SESSION['user_id'] = $row['id'];
-//    $_SESSION['username'] = $row['login'];
-
     http_response_code(200);
     echo json_encode(['ok' => true]);
 

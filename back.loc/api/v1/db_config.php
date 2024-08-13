@@ -1,10 +1,10 @@
 <?php
-$dbhost = "localhost";
-$dbuser = "root";
-//$dbpass = "password";
+require 'config.php';
+
+$config = require 'config.php';
 
 // Create a connection to MySQL
-$conn = new mysqli($dbhost, $dbuser);
+$conn = new mysqli($config['dbhost'], $config['dbuser']);
 
 // Check the connection
 if ($conn->connect_error) {
@@ -16,7 +16,7 @@ $dbname = "level2";
 $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Database 'level2' successfully created" . PHP_EOL;
+    echo "Database 'level2' exists" . PHP_EOL;
 } else {
     echo "Error creating database: " . $conn->error . PHP_EOL;
 }
@@ -31,7 +31,7 @@ $sql = "CREATE TABLE IF NOT EXISTS items (
     checked BOOL NOT NULL
 )";
 if ($conn->query($sql) === TRUE) {
-    echo "The items table was created successfully!" . PHP_EOL;
+    echo "The items table exists" . PHP_EOL;
 } else {
     echo "Error creating items table: " . $conn->error . PHP_EOL;
 }
@@ -43,7 +43,7 @@ $sql = "CREATE TABLE IF NOT EXISTS users (
     pass VARCHAR(255) NOT NULL
 )";
 if ($conn->query($sql) === TRUE) {
-    echo "The users table was created successfully!" . PHP_EOL;
+    echo "The users table exists" . PHP_EOL;
 } else {
     echo "Error creating users table: " . $conn->error . PHP_EOL;
 }
