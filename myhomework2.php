@@ -38,21 +38,17 @@ function parseTcpStringAsHttpRequest($string)
 {
     //$substring = explode(PHP_EOL, $string);
     $substrings = explode("\n", $string);
-    $method_and_uri = explode(" ", $substrings[0]);
-    $method = $method_and_uri[0];
-    $uri = $method_and_uri[1];
+    $methodAndUri = explode(" ", $substrings[0]);
+    $method = $methodAndUri[0];
+    $uri = $methodAndUri[1];
+    $body = $substrings[count($substrings) - 1];
+    $partSubstringsForHeaders=array_splice($substrings, 1, -2);
     $headers = [];
 
-    foreach ($substrings as $key => $value) {
-
-        if ($key > 0 && $key < count($substrings) - 2) { // Перевірка індексу
-            $value_array = explode(":", $value);
-            $headers[$value_array[0]] = $value_array[1];
-        }
-
+    foreach ($partSubstringsForHeaders as $value) {
+        $value_array = explode(":", $value);
+        $headers[$value_array[0]] = $value_array[1];
     }
-
-    $body = $substrings[count($substrings) - 1];
 
     return [
         "method" => $method,
