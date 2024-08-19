@@ -65,14 +65,14 @@ function processHttpRequest($method, $uri, $headers, $body)
     $subUri = explode("=", $uri);
     $numbers = explode(",", $subUri[1]);
 
-    if ($method !== "GET" || !str_contains($uri, "?nums=") || count($numbers) < 1 || $numbers[0] == '') {
-        outputHttpResponse(400, "Bad Request", $headers, "not found");
+    if (!str_starts_with($uri, "/sum")) { //uri не починається з /sum
+        outputHttpResponse(404, "Not Found", $headers, "not found");
 
         return;
     }
 
-    if (!str_starts_with($uri, "/sum")) { //uri не починається з /sum
-        outputHttpResponse(404, "Not Found", $headers, "not found");
+    if ($method !== "GET" || !str_contains($uri, "?nums=") || $numbers[0] == '') {
+        outputHttpResponse(400, "Bad Request", $headers, "not found");
 
         return;
     }
@@ -88,21 +88,18 @@ function processHttpRequest($method, $uri, $headers, $body)
  */
 function parseTcpStringAsHttpRequest($string)
 {
-    $substring = explode("\n", $string);
-    $method_and_uri = explode(" ", $substring[0]);
-    $method = $method_and_uri[0];
-    $uri = $method_and_uri[1];
+    $substrings = explode("\n", $string);
+    $methodAndUri = explode(" ", $substrings[0]);
+    $method = $methodAndUri[0];
+    $uri = $methodAndUri[1];
+    $body = $substrings[count($substrings) - 1];
+    $partSubstringsForHeaders=array_splice($substrings, 1, -2);
     $headers = [];
 
-    foreach ($substring as $key => $value) {
-
-        if ($key > 0 && $key < count($substring) - 2) { // Перевірка індексу
-            $value_array = explode(":", $value);
-            $headers[$value_array[0]] = $value_array[1];
-        }
+    foreach ($partSubstringsForHeaders as $value) {
+        $value_array = explode(":", $value);
+        $headers[$value_array[0]] = $value_array[1];
     }
-
-    $body = $substring[count($substring) - 1];
 
     return [
         "method" => $method,
