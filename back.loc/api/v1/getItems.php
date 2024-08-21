@@ -9,10 +9,9 @@ header('Access-Control-Allow-Credentials: true');
 // database connection
 global $conn;
 require_once("db_conect.php");
-$table="items";
 
 //Execution of the request
-$sql = "SELECT * FROM $table";
+$sql = "SELECT * FROM items";
 $result = $conn->query($sql);
 
 //Creating an array of data

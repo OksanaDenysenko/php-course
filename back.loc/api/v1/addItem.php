@@ -13,7 +13,7 @@ require_once("db_conect.php");
 //receives json { text: "..." }
 $jsonGet = file_get_contents('php://input');
 $text = json_decode($jsonGet, true);
-$value_text=Strip_tags(htmlspecialchars($text['text']));
+$value_text=strip_tags(htmlspecialchars($text['text']));
 
 //add item
 $stmt = $conn->prepare("INSERT INTO items (text, checked) VALUES (?, 0)"); // prepared request

@@ -33,6 +33,7 @@ if (empty($login) || empty($password)) {
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
     http_response_code(409);
     echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
+    exit;
 }
 
 // Preparation and execution of the request
@@ -41,7 +42,8 @@ $stmt->bind_param("s", $login);
 
 if (!$stmt->execute()) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database error']);
+    echo json_encode(['error' => 'Server error']);
+    exit;
 }
 
 $result = $stmt->get_result();
@@ -50,6 +52,7 @@ $count = $result->fetch_column();
 if ($count > 0) {
     http_response_code(409);
     echo json_encode(['error' => 'A user with this login already exists']);
+    exit;
 }
 $hash_password = password_hash($password, PASSWORD_DEFAULT); // Hashed password
 

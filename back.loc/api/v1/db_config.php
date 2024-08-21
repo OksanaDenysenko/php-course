@@ -13,10 +13,10 @@ if ($conn->connect_error) {
 
 //Create database "level2"
 $dbname = "level2";
-$sql = "CREATE DATABASE IF NOT EXISTS $dbname";
+$sql = "CREATE DATABASE $dbname";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Database 'level2' exists" . PHP_EOL;
+    echo "The database 'level2' was created" . PHP_EOL;
 } else {
     echo "Error creating database: " . $conn->error . PHP_EOL;
 }
@@ -24,28 +24,28 @@ if ($conn->query($sql) === TRUE) {
 // Select the database
 $conn->select_db($dbname);
 
-//Create table "items"
-$sql = "CREATE TABLE IF NOT EXISTS items (
+//Request to create table "items"
+$arrCreateTables['items']=["CREATE TABLE items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     text VARCHAR(255) NOT NULL,
     checked BOOL NOT NULL
-)";
-if ($conn->query($sql) === TRUE) {
-    echo "The items table exists" . PHP_EOL;
-} else {
-    echo "Error creating items table: " . $conn->error . PHP_EOL;
-}
+)"];
 
-//Create table "users"
-$sql = "CREATE TABLE IF NOT EXISTS users (
+//Request to create table "users"
+$arrCreateTables['users']=["CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     login VARCHAR(255) NOT NULL UNIQUE,
     pass VARCHAR(255) NOT NULL
-)";
-if ($conn->query($sql) === TRUE) {
-    echo "The users table exists" . PHP_EOL;
-} else {
-    echo "Error creating users table: " . $conn->error . PHP_EOL;
+)"];
+
+//Execution of requests to create tables
+foreach ($arrCreateTables as $key =>$value){
+    $sql = $value;
+    if ($conn->query($sql) === TRUE) {
+        echo "The ".$key." table was created" . PHP_EOL;
+    } else {
+        echo "Error creating ".$key." table: " . $conn->error . PHP_EOL;
+    }
 }
 
 // Close the connection
