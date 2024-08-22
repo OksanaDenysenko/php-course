@@ -1,6 +1,8 @@
 <?php
 
 //CORS
+use JetBrains\PhpStorm\NoReturn;
+
 header("Access-Control-Allow-Origin: http://front_v2.loc");
 header("Access-Control-Allow-Methods: GET,POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -8,6 +10,7 @@ header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { //pre-line request processing
     http_response_code(200);
+
     exit;
 }
 
@@ -22,33 +25,31 @@ $data = json_decode($json, true);
 // get data via URL and call a certain function depending on the received data
 $action = $_GET['action'];
 
-switch ($action) {
-    case 'addItem':
-        addItem($data, $conn);
-        break;
-    case 'changeItem':
-        changeItem($data, $conn);
-        break;
-    case 'deleteItem':
-        deleteItem($data, $conn);
-        break;
-    case 'getItems':
-        getItems($conn);
-        break;
-    case 'login':
-        login($data, $conn);
-        break;
-    case 'logout':
-        logout($conn);
-        break;
-    case 'register':
-        register($data, $conn);
-        break;
-    default:
-        http_response_code(500);
-        echo json_encode(['error' => 'Undefined action']);
-        exit();
+match ($action) {
+    'addItem' => addItem($data, $conn),
+    'changeItem' => changeItem($data, $conn),
+    'deleteItem' => deleteItem($data, $conn),
+    'getItems' => getItems($conn),
+    'login' => login($data, $conn),
+    'logout' => logout(),
+    'register' => register($data, $conn),
+    default => error(500,'Undefined action')
+};
+
+/**
+ * Sends an error message and terminates the program
+ * @param $code - http request code
+ * @param $message - error message
+ * @return void
+ */
+#[NoReturn] function error($code,$message):void
+{
+    http_response_code($code);
+    echo json_encode(['error' => $message]);
+
+    exit();
 }
+
 
 /**
  * The function adds a new element to the table of items in the database.
@@ -58,18 +59,18 @@ switch ($action) {
  */
 function addItem($data, $conn): void
 {
-    $value_data = Strip_tags(htmlspecialchars($data['text']));
+    $value_data = strip_tags(htmlspecialchars($data['text']));
 
     $stmt = $conn->prepare("INSERT INTO items (text, checked) VALUES (?, 0)"); // prepared request
     $stmt->bind_param("s", $value_data);
 
     if ($stmt->execute()) {
-        $id = $stmt->insert_id;
         http_response_code(200);
-        echo json_encode(['id' => $id]);
+
+        echo json_encode(['id' => $stmt->insert_id]);
+
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
+        error(500,'Server error' );
     }
 
     $stmt->close();
@@ -83,19 +84,20 @@ function addItem($data, $conn): void
  */
 function changeItem($data, $conn): void
 {
-    $id = Strip_tags(htmlspecialchars($data["id"])); // The ID of the record to update
-    $text = Strip_tags(htmlspecialchars($data["text"]));// New values to update
-    $checked = Strip_tags(htmlspecialchars($data["checked"])); // New values to update
+    $id = strip_tags(htmlspecialchars($data["id"])); // The ID of the record to update
+    $text = strip_tags(htmlspecialchars($data["text"]));// New values to update
+    $checked = strip_tags(htmlspecialchars($data["checked"])); // New values to update
 
     $stmt = $conn->prepare("UPDATE items SET text = ?, checked = ? WHERE id = ?"); // prepared request
     $stmt->bind_param("ssi", $text, $checked, $id);
 
     if ($stmt->execute()) {
         http_response_code(200);
+
         echo json_encode(['ok' => true]);
+
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
+        error(500,'Server error' );
     }
 
     $stmt->close();
@@ -109,17 +111,18 @@ function changeItem($data, $conn): void
  */
 function deleteItem($data, mysqli $conn): void
 {
-    $id = Strip_tags(htmlspecialchars($data["id"]));
+    $id = strip_tags(htmlspecialchars($data["id"]));
 
     $stmt = $conn->prepare("DELETE FROM items WHERE id = ?");
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
         http_response_code(200);
+
         echo json_encode(['ok' => true]);
+
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
+        error(500,'Server error' );
     }
     $stmt->close();
 }
@@ -155,14 +158,12 @@ function login($data, mysqli $conn): void
 
     // If fields are empty
     if (empty($login) || empty($data["pass"])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid input']);
+        error(400,'Invalid input');
     }
 
     //Login and password validation
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
-        http_response_code(409);
-        echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
+        error(409,'Login and password can only contain Latin letters, numbers and an underscore' );
     }
 
     //SQL injection
@@ -172,15 +173,13 @@ function login($data, mysqli $conn): void
     $result = $stmt->get_result();
 
     if (mysqli_num_rows($result) != 1) { //if the user is not registered
-        http_response_code(401);
-        exit(json_encode(['error' => 'User not found']));
+        error(401,'User not found' );
     }
 
     $row = $result->fetch_assoc(); // convert the string into an associative array
 
     if (!password_verify($password, $row['pass'])) { //if the password hash does not match
-        http_response_code(400);
-        exit(json_encode(['error' => 'Incorrect password']));
+        error(400,'Incorrect password');
     }
 
     try {
@@ -188,12 +187,12 @@ function login($data, mysqli $conn): void
         setcookie('auth_token', $token, time() + 3600, '/', '', true, true);// store the token in a cookie for 1 hour
         $_SESSION['auth_token'] = $token; // store the token in the session
         http_response_code(200);
+
         echo json_encode(['ok' => true]);
 
     } catch (\Random\RandomException $e) {
         error_log("Error generating random token: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
+        error(500,'Server error' );
     }
 
     $stmt->close();
@@ -209,12 +208,12 @@ function logout(): void
         session_start(); // check if a session exists
         session_unset(); // clear all session variables
         session_destroy(); // destroy the session
+
         echo json_encode(['ok' => 'true']);
 
     } catch (Exception $e) {
         error_log("Error destroy the session: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
+        error(500,'Server error' );
     }
 }
 
@@ -231,15 +230,12 @@ function register($data, mysqli $conn): void
 
     // If fields are empty
     if (empty($login) || empty($data["pass"])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid input']);
-        exit;
+        error(400,'Invalid input');
     }
 
     //Login and password validation
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
-        http_response_code(409);
-        echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
+        error(409,'Login and password can only contain Latin letters, numbers and an underscore' );
     }
 
     // Preparation and execution of the request
@@ -247,16 +243,14 @@ function register($data, mysqli $conn): void
     $stmt->bind_param("s", $login);
 
     if (!$stmt->execute()) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Database error']);
+        error(500,'Server error' );
     }
 
     $result = $stmt->get_result();
     $count = $result->fetch_column();
 
     if ($count > 0) {
-        http_response_code(409);
-        echo json_encode(['error' => 'A user with this login already exists']);
+        error(409,'A user with this login already exists' );
     }
     $hash_password = password_hash($password, PASSWORD_DEFAULT); // Hashed password
 
@@ -266,10 +260,11 @@ function register($data, mysqli $conn): void
 
     if ($stmt->execute()) {
         http_response_code(200);
+
         echo json_encode(['ok' => true]);
+
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Database error']);
+        error(500,'Server error' );
     }
 
     $stmt->close();
