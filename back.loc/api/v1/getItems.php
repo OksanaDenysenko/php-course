@@ -19,6 +19,7 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
 
 // Conversion of data array to JSON
 $json = json_encode(['items' => $data]);
+
 echo $json;
 
 // Close the database connection

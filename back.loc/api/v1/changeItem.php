@@ -24,9 +24,12 @@ $stmt->bind_param("s", $text);
 
 if ($stmt->execute()) {
     http_response_code(200);
+
     echo json_encode(['ok' => true]);
+
 } else {
     http_response_code(500);
+
     echo json_encode(['error' => 'Server error']);
 }
 

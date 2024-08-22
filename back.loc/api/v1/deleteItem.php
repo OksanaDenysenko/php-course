@@ -23,9 +23,11 @@ $stmt->bind_param("i", $id);
 //Execution of the request
 if ($stmt->execute()) {
     http_response_code(200);
+
     echo json_encode(['ok' => true]);
 } else {
     http_response_code(500);
+
     echo json_encode(['error' => 'Server error']);
 }
 

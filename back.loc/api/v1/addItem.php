@@ -20,11 +20,13 @@ $stmt = $conn->prepare("INSERT INTO items (text, checked) VALUES (?, 0)"); // pr
 $stmt->bind_param("s", $value_text);
 
 if ($stmt->execute()) {
-    $id = $stmt->insert_id;
     http_response_code(200);
-    echo json_encode(['id' => $id]);
+
+    echo json_encode(['id' => $stmt->insert_id]);
+
 } else {
     http_response_code(500);
+
     echo json_encode(['error' => 'Server error']);
 }
 

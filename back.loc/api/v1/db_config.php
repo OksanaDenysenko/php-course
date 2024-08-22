@@ -1,5 +1,4 @@
 <?php
-require 'config.php';
 
 $config = require 'config.php';
 
@@ -16,8 +15,10 @@ $dbname = "level2";
 $sql = "CREATE DATABASE $dbname";
 
 if ($conn->query($sql) === TRUE) {
+
     echo "The database 'level2' was created" . PHP_EOL;
 } else {
+
     echo "Error creating database: " . $conn->error . PHP_EOL;
 }
 
@@ -42,8 +43,10 @@ $arrCreateTables['users']=["CREATE TABLE users (
 foreach ($arrCreateTables as $key =>$value){
     $sql = $value;
     if ($conn->query($sql) === TRUE) {
+
         echo "The ".$key." table was created" . PHP_EOL;
     } else {
+
         echo "Error creating ".$key." table: " . $conn->error . PHP_EOL;
     }
 }
