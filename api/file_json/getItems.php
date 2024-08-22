@@ -4,6 +4,7 @@ try {
     $readFile = file_get_contents("file.json"); // read file
 } catch (Exception $e) { // if unable to read
     error_log("Error reading file: " . $e->getMessage(), 3);
+
     echo "Server error";
 }
 
