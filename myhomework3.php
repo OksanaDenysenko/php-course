@@ -16,7 +16,6 @@ function readHttpLikeInput()
             $toread = $m[1] * 1;
 
         if ($line == "\r\n")
-
             break;
     }
 
@@ -90,9 +89,6 @@ function parseTcpStringAsHttpRequest($string)
 {
     $substrings = explode("\n", $string);
     $methodAndUri = explode(" ", $substrings[0]);
-    $method = $methodAndUri[0];
-    $uri = $methodAndUri[1];
-    $body = $substrings[count($substrings) - 1];
     $partSubstringsForHeaders=array_splice($substrings, 1, -2);
     $headers = [];
 
@@ -102,10 +98,10 @@ function parseTcpStringAsHttpRequest($string)
     }
 
     return [
-        "method" => $method,
-        "uri" => $uri,
+        "method" => $methodAndUri[0],
+        "uri" => $methodAndUri[1],
         "headers" => $headers,
-        "body" => $body,
+        "body" => $substrings[count($substrings) - 1],
     ];
 }
 
