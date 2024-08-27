@@ -17,7 +17,6 @@ function readHttpLikeInput()
             $toread = $m[1] * 1;
 
         if ($line == "\r\n")
-
             break;
     }
 
@@ -71,30 +70,28 @@ function processHttpRequest($method, $uri, $headers, $body)
     $arrayBody = explode("&", $body);
     $login = explode("=", $arrayBody[0]);
     $password = explode("=", $arrayBody[1]);
-    $login_password = $login[1] . ":" . $password[1]; // отримали логін і пароль
+    $login_password = $login[1] . ":" . $password[1];
 
     $file = "passwords.txt";
+    $handle = fopen($file, "r");
 
-    try {
-        $fileContent = file_get_contents($file); // читаємо файл
-    } catch (Exception $e) {
-        error_log("Error reading file: " . $e->getMessage(), 3);
-        outputHttpResponse(500, " Integral Server Error", $headers, "not found");
+    if (!$handle) {
+        error_log("Error opening file: $file", 3);
+        outputHttpResponse(500, "Integral Server Error", $headers, "not found");
 
         return;
     }
 
-    $string = explode("\n", $fileContent);
-
-    foreach ($string as $value) {
-
-        if ($value== $login_password) {
+    while (($string = fgets($handle)) !== false) {
+        if (trim($string) == $login_password) {
+            fclose($handle);
             outputHttpResponse(200, " OK", $headers, "<h1 style=\"color:green\">FOUND</h1>");
 
             return;
         }
     }
 
+    fclose($handle);
     outputHttpResponse(401, " Unauthorized", $headers, "not found");
 }
 
@@ -107,9 +104,6 @@ function parseTcpStringAsHttpRequest($string)
 {
     $substrings = explode("\n", $string);
     $methodAndUri = explode(" ", $substrings[0]);
-    $method = $methodAndUri[0];
-    $uri = $methodAndUri[1];
-    $body = $substrings[count($substrings) - 1];
     $partSubstringsForHeaders=array_splice($substrings, 1, -2);
     $headers = [];
 
@@ -119,10 +113,10 @@ function parseTcpStringAsHttpRequest($string)
     }
 
     return [
-        "method" => $method,
-        "uri" => $uri,
+        "method" => $methodAndUri[0],
+        "uri" => $methodAndUri[1],
         "headers" => $headers,
-        "body" => $body,
+        "body" => $substrings[count($substrings) - 1],
     ];
 }
 
