@@ -7,8 +7,16 @@ $id = $text["id"];
 
 $fileJson = json_decode(file_get_contents("file.json"), true);
 
-$fileJson["items"][$id]["text"] = $text["text"];
-$fileJson["items"][$id]["checked"] = $text["checked"];
+//Validation json
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON data']);
+
+    exit();
+}
+
+$fileJson["items"][$id]["text"] = strip_tags(htmlspecialchars($text["text"]));
+$fileJson["items"][$id]["checked"] = strip_tags(htmlspecialchars($text["checked"]));
 
 file_put_contents("file.json", json_encode($fileJson, JSON_UNESCAPED_UNICODE));
 

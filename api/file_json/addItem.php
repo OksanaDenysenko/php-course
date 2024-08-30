@@ -6,22 +6,22 @@ $text = json_decode($request, true);
 
 // file to count id
 if (!file_exists("counter.txt")) {
-    file_put_contents("counter.txt", "0");
+    file_put_contents("counter.txt", "");
 }
 
 $count = file_get_contents("counter.txt");
 $id = $count + 1;
 
 //writing to a file
-$array = ['id' => $id,
-    "text" => $text,
-    "checked" => "false"];
+$array = ['id' => strip_tags(htmlspecialchars($id)),
+    'text' => strip_tags(htmlspecialchars($text['text'])),
+    'checked' => "false"];
 
 $arrayJson = json_encode($array);
 
-if (!file_exists("file.json")) {//if the file to write does not exist
-    $file=fopen("file.json", "w");
-    fclose($file); // close the stream
+//if the file to write does not exist
+if (!file_exists("file.json")) {
+    file_put_contents("file.json",null);
 }
 
 $fileJson = json_decode(file_get_contents("file.json"), true);
@@ -33,5 +33,6 @@ $response = ["id" => $id];
 
 echo json_encode($response);
 
-file_put_contents("counter.txt", $id); // write down the following id
+// write down the following id
+file_put_contents("counter.txt", $id);
 

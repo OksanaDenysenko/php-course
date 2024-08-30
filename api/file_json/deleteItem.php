@@ -7,10 +7,8 @@ $id = $text["id"];
 
 $fileJson = json_decode(file_get_contents("file.json"), true);
 
-unset($fileJson["items"][$id]); // delete item
-
-$count = file_get_contents("counter.txt");
-file_put_contents("counter.txt", $count - 1);
+// delete item
+unset($fileJson["items"][$id]);
 
 file_put_contents("file.json", json_encode($fileJson, JSON_UNESCAPED_UNICODE));
 
