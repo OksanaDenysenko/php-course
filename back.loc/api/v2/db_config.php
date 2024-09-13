@@ -49,4 +49,3 @@ foreach ($arrCreateTables as $key =>$value){
 
 // Close the connection
 $conn->close();
-
