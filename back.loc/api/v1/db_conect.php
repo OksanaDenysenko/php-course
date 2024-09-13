@@ -8,4 +8,3 @@ $conn = new mysqli(
     $config['dbpass'],
     $config['dbname']
 );
-

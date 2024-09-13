@@ -14,22 +14,20 @@ require_once("db_conect.php");
 $jsonGet = file_get_contents('php://input');
 $json = json_decode($jsonGet, true);
 
-$id = Strip_tags(htmlspecialchars($json["id"])); // The ID of the record to update
-$text = Strip_tags(htmlspecialchars($json["text"]));// New values to update
-$checked = Strip_tags(htmlspecialchars($json["checked"])); // New values to update
+$id = htmlspecialchars(strip_tags($json["id"])); // The ID of the record to update
+$text = htmlspecialchars(strip_tags($json["text"]));// New values to update
+$checked = htmlspecialchars(strip_tags($json["checked"])); // New values to update
 
 // SQL-request to update a record
-$stmt = $conn->prepare("UPDATE items SET text = ?, checked = '$checked' WHERE id = $id"); // prepared request
-$stmt->bind_param("s", $text);
+$stmt = $conn->prepare("UPDATE items SET text = ?, checked = ? WHERE id = ?"); // prepared request
+$stmt->bind_param("sii", $text, $checked, $id);
 
 if ($stmt->execute()) {
     http_response_code(200);
-
     echo json_encode(['ok' => true]);
 
 } else {
     http_response_code(500);
-
     echo json_encode(['error' => 'Server error']);
 }
 

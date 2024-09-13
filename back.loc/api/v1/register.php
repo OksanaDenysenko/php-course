@@ -26,7 +26,6 @@ $password = $data["pass"] . "ZxCvBn"; // add additional characters for security
 // If fields are empty
 if (empty($login) || empty($password)) {
     http_response_code(400);
-
     echo json_encode(['error' => 'Invalid input']);
 
     exit;
@@ -35,7 +34,6 @@ if (empty($login) || empty($password)) {
 //Login and password validation
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $login) || !preg_match('/^[a-zA-Z0-9_]+$/', $password)) {
     http_response_code(409);
-
     echo json_encode(['error' => 'Login and password can only contain Latin letters, numbers and an underscore']);
 
     exit;
@@ -47,7 +45,6 @@ $stmt->bind_param("s", $login);
 
 if (!$stmt->execute()) {
     http_response_code(500);
-
     echo json_encode(['error' => 'Server error']);
 
     exit;
@@ -58,7 +55,6 @@ $count = $result->fetch_column();
 
 if ($count > 0) {
     http_response_code(409);
-
     echo json_encode(['error' => 'A user with this login already exists']);
 
     exit;
@@ -71,12 +67,10 @@ $stmt->bind_param("ss", $login, $hash_password);
 
 if ($stmt->execute()) {
     http_response_code(200);
-
     echo json_encode(['ok' => true]);
 
 } else {
     http_response_code(500);
-
     echo json_encode(['error' => 'Server error']);
 }
 

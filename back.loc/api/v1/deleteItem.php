@@ -14,7 +14,7 @@ require_once("db_conect.php");
 $jsonGet = file_get_contents('php://input');
 $text = json_decode($jsonGet, true);
 
-$id = Strip_tags(htmlspecialchars($text["id"]));
+$id = htmlspecialchars(strip_tags($text["id"]));
 
 // SQL-request to delete a record
 $stmt = $conn->prepare("DELETE FROM items WHERE id = ?");
@@ -23,11 +23,10 @@ $stmt->bind_param("i", $id);
 //Execution of the request
 if ($stmt->execute()) {
     http_response_code(200);
-
     echo json_encode(['ok' => true]);
+
 } else {
     http_response_code(500);
-
     echo json_encode(['error' => 'Server error']);
 }
 
