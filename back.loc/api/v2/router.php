@@ -59,14 +59,13 @@ match ($action) {
  */
 function addItem($data, $conn): void
 {
-    $value_data = strip_tags(htmlspecialchars($data['text']));
+    $value_data = htmlspecialchars(strip_tags($data['text']));
 
     $stmt = $conn->prepare("INSERT INTO items (text, checked) VALUES (?, 0)"); // prepared request
     $stmt->bind_param("s", $value_data);
 
     if ($stmt->execute()) {
         http_response_code(200);
-
         echo json_encode(['id' => $stmt->insert_id]);
 
     } else {
@@ -84,16 +83,15 @@ function addItem($data, $conn): void
  */
 function changeItem($data, $conn): void
 {
-    $id = strip_tags(htmlspecialchars($data["id"])); // The ID of the record to update
-    $text = strip_tags(htmlspecialchars($data["text"]));// New values to update
-    $checked = strip_tags(htmlspecialchars($data["checked"])); // New values to update
+    $id = htmlspecialchars(strip_tags($data["id"])); // The ID of the record to update
+    $text = htmlspecialchars(strip_tags($data["text"]));// New values to update
+    $checked = htmlspecialchars(strip_tags($data["checked"])); // New values to update
 
     $stmt = $conn->prepare("UPDATE items SET text = ?, checked = ? WHERE id = ?"); // prepared request
-    $stmt->bind_param("ssi", $text, $checked, $id);
+    $stmt->bind_param("sii", $text, $checked, $id);
 
     if ($stmt->execute()) {
         http_response_code(200);
-
         echo json_encode(['ok' => true]);
 
     } else {
@@ -111,14 +109,13 @@ function changeItem($data, $conn): void
  */
 function deleteItem($data, mysqli $conn): void
 {
-    $id = strip_tags(htmlspecialchars($data["id"]));
+    $id = htmlspecialchars(strip_tags($data["id"]));
 
     $stmt = $conn->prepare("DELETE FROM items WHERE id = ?");
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
         http_response_code(200);
-
         echo json_encode(['ok' => true]);
 
     } else {
@@ -186,8 +183,8 @@ function login($data, mysqli $conn): void
         $token = bin2hex(random_bytes(32));
         setcookie('auth_token', $token, time() + 3600, '/', '', true, true);// store the token in a cookie for 1 hour
         $_SESSION['auth_token'] = $token; // store the token in the session
-        http_response_code(200);
 
+        http_response_code(200);
         echo json_encode(['ok' => true]);
 
     } catch (\Random\RandomException $e) {
