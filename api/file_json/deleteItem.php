@@ -8,7 +8,23 @@ $id = $text["id"];
 $fileJson = json_decode(file_get_contents("file.json"), true);
 
 // delete item
-unset($fileJson["items"][$id]);
+foreach ($fileJson["items"] as $key=> $line) {
+    if ($line['id']==$id) {
+        unset($fileJson["items"][$key]);
+    }
+}
+
+//or this variant
+
+//$new_fileJson=[];
+//
+//foreach ($fileJson["items"] as $key=> $line) {
+//    if ($line['id']!=$id) {
+//        $new_fileJson[] = $fileJson["items"][$key];
+//    }
+//}
+//
+//$fileJson=$new_fileJson;
 
 file_put_contents("file.json", json_encode($fileJson, JSON_UNESCAPED_UNICODE));
 
